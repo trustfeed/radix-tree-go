@@ -22,4 +22,4 @@ Lets walk through an example;
 3. Insert the (key, value) pair ("cat", 2), resulting in a branch with two leaves as children (S<sub>2</sub>).
 4. Insert the (key, value) pair ("doge", 3), resulting in a branch with a leaf and compressed prefix as children (S<sub>3</sub>).
 
-![Example radix trees](https://raw.githubusercontent.com/trustfeed/radix-tree-go/)
+![Example radix trees](https://github.com/trustfeed/radix-tree-go/raw/master/example.png)
