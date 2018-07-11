@@ -1,5 +1,10 @@
 package pkg
 
+import (
+	"fmt"
+	"strings"
+)
+
 // This represents a node in the radix tree
 type node interface {
 }
@@ -97,7 +102,7 @@ func insert(originalNode node, key, value []byte) node {
 				if plen == len(n.prefix) {
 					b.data = n.data
 				} else {
-					b.children[n.prefix[plen]] = &leaf{n.prefix[plen:], n.data}
+					b.children[n.prefix[plen]] = &leaf{n.prefix[plen+1:], n.data}
 				}
 
 				g := f
@@ -130,7 +135,7 @@ func insert(originalNode node, key, value []byte) node {
 				// Introduce a new branch
 				b := branch{}
 				if len(n.prefix) > plen+1 {
-					b.children[n.prefix[plen]] = &compressed{n.prefix[plen:], n.child}
+					b.children[n.prefix[plen]] = &compressed{n.prefix[plen+1:], n.child}
 				} else {
 					b.children[n.prefix[plen]] = n.child
 				}
@@ -162,4 +167,23 @@ func (b *branch) copy() *branch {
 	}
 	copy(out.data, b.data)
 	return &out
+}
+
+func prettyPrint(origNode node) string {
+	switch n := origNode.(type) {
+	case nil:
+		return "<nil>"
+	case *branch:
+		strs := make([]string, len(n.children))
+		for i, c := range n.children {
+			strs[i] = fmt.Sprintf(" %v -> %s ", i, prettyPrint(c))
+		}
+		return fmt.Sprintf("< %s >", strings.Join(strs, " | "))
+	case *leaf:
+		return fmt.Sprintf("{ %v -> %s }", n.prefix, n.data)
+	case *compressed:
+		return fmt.Sprintf("{ %v -> %s }", n.prefix, prettyPrint(n.child))
+	default:
+		return ""
+	}
 }
