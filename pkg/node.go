@@ -1,20 +1,13 @@
 package pkg
 
-import "reflect"
-
 // This represents a node in the radix tree
 type node interface {
-	nothing()
 }
-
-func (*branch) nothing()     {}
-func (*leaf) nothing()       {}
-func (*compressed) nothing() {}
 
 type (
 	// A branching point
 	branch struct {
-		children [17]node
+		children [16]node
 		data     []byte
 	}
 
@@ -32,8 +25,7 @@ type (
 )
 
 // An iterative implementation of lookup function.
-func lookup(originalNode node, key []byte) []byte {
-	node := originalNode
+func lookup(node node, key []byte) []byte {
 	for {
 		switch n := node.(type) {
 		case nil:
@@ -61,11 +53,12 @@ func lookup(originalNode node, key []byte) []byte {
 			key = key[plen:]
 
 		default:
-			panic(reflect.TypeOf(n))
+			panic("unknown node type")
 		}
 	}
 }
 
+// An iterative implementation of the insert
 func insert(originalNode node, key, value []byte) node {
 	f := func(node node) node {
 		return node
@@ -122,10 +115,41 @@ func insert(originalNode node, key, value []byte) node {
 			}
 
 		case *compressed:
-			return f(nil)
+			plen := prefixLen(key, n.prefix)
+			if plen == len(n.prefix) {
+				// Keep this node as is and insert to child
+				k := n.prefix
+				g := f
+				f = func(n node) node {
+					return g(&compressed{k, n})
+				}
+
+				thisNode = n.child
+				key = key[plen:]
+			} else {
+				// Introduce a new branch
+				b := branch{}
+				if len(n.prefix) > plen+1 {
+					b.children[n.prefix[plen]] = &compressed{n.prefix[plen:], n.child}
+				} else {
+					b.children[n.prefix[plen]] = n.child
+				}
+
+				g := f
+				k := key[:plen]
+				f = func(n node) node {
+					if plen == 0 {
+						return g(n)
+					} else {
+						return g(&compressed{k, n})
+					}
+				}
+				thisNode = &b
+				key = key[plen:]
+			}
 
 		default:
-			panic("what")
+			panic("unknown node type")
 		}
 
 	}
