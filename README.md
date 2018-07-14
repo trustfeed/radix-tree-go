@@ -54,7 +54,7 @@ Lets implement this data structure. We will assume the keys are sequences of hex
 
 Lets start by creating a struct for the nodes.
 
-```
+```go
 type node struct {
 	children [16]*node
 	data     []byte
@@ -65,7 +65,7 @@ We pre-allocate an array to represent the children of a node. This allows lookup
 
 We will need a shallow copy function;
 
-```
+```go
 func (n *node) copy() *node {
 	out := node{
 		children: n.children,
@@ -86,7 +86,7 @@ Now lets make the lookup function. When performing the lookup function we always
 2. There is no remaining key to search so return the data at the current node,
 3. Otherwise descend to the appropriate child and continue searching.
 
-```
+```go
 func lookup(n *node, k []byte) []byte {
 	if n == nil {
 		return nil
@@ -108,7 +108,7 @@ Now lets make the insert function. When performing the insert function we also h
 2. There is no remaining key so add the value to the current node,
 3. Otherwise descend to the appropriate child and continue.
 
-```
+```go
 func insert(n *node, k []byte, v []byte) *node {
 	if n == nil {
 		out := node{}
@@ -129,7 +129,7 @@ func insert(n *node, k []byte, v []byte) *node {
 
 Lets hide the implementation behind a public interface.
 
-```
+```go
 type KVStore interface {
 	// This inserts the new (key, value) pair into
 	// the trie. k must contain values in [0, 15].
@@ -160,7 +160,7 @@ type trie node
 
 Let's write a few basic tests. We will check the basic insert and look up functionality. We will also ensure that the structure is immutable.
 
-```
+```go
 func TestTrie(t *testing.T) {
 	t0 := New()
 	if t0.Lookup([]byte{0}) != nil {
@@ -229,7 +229,8 @@ A radix tree implementation is signifigantly more complex than a trie. We will b
 We use several different structs to represent different possible nodes.
 
 They are as follows;
-```
+
+```go
 type (
 	// Just data, no key
 	valueNode []byte
@@ -266,15 +267,15 @@ The look up function has to deal with each of the new node types;
 
 1. The radix tree is empty; return nil
 2. The node is a valueNode
-	a. The key is empty; return the value
+   - The key is empty; return the value
 3. The node is a fullNode
-	a. The key is empty; return the value at this node
-	b. Otherwise call lookup on the appropriate child node
+   - The key is empty; return the value at this node
+   - Otherwise call lookup on the appropriate child node
 4. The node is a shortNode
-	a. There is no shared prefix of the keys; return nil
-	b. The shortNode.Key is a prefix of key; call insert on child
+   - There is no shared prefix of the keys; return nil
+   - The shortNode.Key is a prefix of key; call insert on child
 
-```
+```go
 func lookup(node interface{}, key []byte) []byte {
 	switch n := node.(type) {
 	case nil:
@@ -314,20 +315,20 @@ func lookup(node interface{}, key []byte) []byte {
 The look up now has to deal with more cases;
 
 1. The radix tree is empty
-	a. The key is empty; insert a value node
-	b. Insert a shortNode with the key, call insert on the child
+   - The key is empty; insert a value node
+   - Insert a shortNode with the key, call insert on the child
 2. The node is a valueNode
-	a. The key is empty; replace the value
-	b. Create a branch with the existing data as a child, call insert on the branch
+   - The key is empty; replace the value
+   - Create a branch with the existing data as a child, call insert on the branch
 3. The node is a fullNode
-	a. The key is empty; insert on the value child
-	b. Call insert on the appropriate child node
+   - The key is empty; insert on the value child
+   - Call insert on the appropriate child node
 4. The node is a shortNode
-	a. The shortNode.Key is a prefix of key; call insert on child
-	b. There is no shared prefix of the keys; create a branch and insert short nodes child and the new (key, value) pair on the branch
-	c. Create a branch as above, but insert it under a shortNode containing the shared prefix.
+   - The shortNode.Key is a prefix of key; call insert on child
+   - There is no shared prefix of the keys; create a branch and insert short nodes child and the new (key, value) pair on the branch
+   - Create a branch as above, but insert it under a shortNode containing the shared prefix.
 
-```
+```go
 func insert(node interface{}, key, value []byte) interface{} {
 	switch n := node.(type) {
 	case nil:
