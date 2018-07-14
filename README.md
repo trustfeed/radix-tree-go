@@ -1,32 +1,34 @@
 # Tries and Radix Trees (blog)
 
 ## Overview
-This article will present two types of Key-Value data structures; the trie and the radix-tree. First we will provide some context on the importance of these data structures along with high-level descriptions to introduce the concepts.
+This article will present two types of Key-Value data structures; the trie and the radix tree. First we will provide some context on the importance of these data structures along with high level descriptions to introduce the concepts.
 
-In addition we provide implementations in Go that should be very similar to the data structures and algorithms in Ethereum. This should provide all the low-level detail required to actually use these concepts in practice.
+In addition we provide implementations in Go that should be very similar to the data structures and algorithms in Ethereum. This should provide all the low level detail required to actually use these concepts in practice.
 
 ## Key-Value Stores
 
 Key-Value stores are a simple data storage paradigm that allows us to associate some arbitrary data (the value) with an identifier (the key). They provide efficient methods to;
 
 1. insert a new key-value pair,
-2. look up the value for a given key.
+2. look up the value stored for a given key.
 
-Data structures providing this functionality are all over the place. They have become a standard feature in programming languages; such as Python's dictionary or Go's map. It is hard to imagine programming without these tools at ones disposal.
+Data structures providing this functionality are all over the place. They are a standard feature in programming languages; such as Python's dictionary or Go's map. It is hard to imagine programming without these tools at ones disposal.
 
-Another common use for key-value stores is NoSQL databases, such as Dynamo and Redis. While these databases generally lack the query power of SQL, they are fast and massively scalable. Because of this they have found countless application in big data and real-time applications.
+Another common use for key-value stores is NoSQL databases, such as Dynamo and Redis. While these databases generally lack the query power of SQL, they are fast and massively scalable. Because of this they have found countless application in big data and real time applications.
 
-A final example of application is the Ethereum blockchain app platform. Here key-value stores are used to store state.
+A final example of application is the Ethereum blockchain app platform. Here key-value stores are used to store state of smart contracts.
 
 ## Immutability
 
 Before covering the detail of some key-value implementations we should briefly mention the importance of immutable data.
 
-The idea of immutable data is that once a value is assigned it doesn't ever change. Functional programmers have been evangelical of this style of programming for decades as they have found it makes their programs easier to reason about, debug and parallelise.
+The idea of immutable data is that once data is created it doesn't ever change. Functional programmers have been evangelical about the use of immutable data for decades as they have found it makes their programs easier to reason about, debug and parallelise.
 
-Immutable data structures allow a program to update large complex data structures (such as key-value stores) efficiently, while leaving the previous state of the data structure unaffected. Additionally, the new state will reuse the memory from the old state if the data has not changed. This makes such immutable data structures memory efficient if all states need to be retained. 
+Immutable data structures allow a program to 'update' large complex data structures (such as key-value stores) efficiently, while leaving the previous state of the data structure unaffected. The data structures are never actually updated in place, rather new data is created that is similar to the old data, but with some small modifications applied. Additionally, the new state will reuse the memory from the old state if the data has not changed. This makes such immutable data structures memory efficient if all states need to be retained. 
 
-Diagram BLAH demonstrates how tree based structures allow for this efficient update and sharing of memory. The tree **Si** is modified by changing the node **Ni**. Even if the tree contains many nodes we can get to **Ni** efficiently (provided the tree is balanced). Once **Ni** is replaced with **Ni+1** the ancestors also need to be updated to point to the correct child. All the other nodes in the tree are unaffected and do not need to be copied. If the tree is balanced the number of ancestors will be very small, even if the tree contains many nodes.
+The following diagram demonstrates how tree based structures allow for this efficient update and sharing of memory. The tree **Si** is modified by changing the data stored node **G**. Even if the tree contains many nodes we can get to **G** efficiently (provided the tree is balanced). Once **G** is replaced with **G'** the ancestors also need to be updated to point to the correct child (**D** becomes **D'** and **F** becomes **F'**). All the other nodes in the tree are unaffected and do not need to be copied, so the new state can refer to data from the old state (shown as red edges in the diagram). If the tree is balanced the number of ancestors will be very small, even if the tree contains many nodes.
+
+![Example radix trees](https://github.com/trustfeed/radix-tree-go/raw/master/images/shared_memory.png)
 
 This immutability is vital to Ethereum's state storage mechanism as previous states need to be retained so transactions can be verified.
 
@@ -36,15 +38,13 @@ Lets start to look at concrete implementations of key-value stores. A trie (as i
 
 A trie has the property that all descendants of a node have keys with a common prefix. This means insert and look up operations will run in O(k) where k is the length of the key.
 
-Lets walk through an example. Create an empty trie IMAGE. The root of the tree is a null pointer. 
+Lets walk through an example, broken into a few steps. 
 
-Now insert the pair ("dog", 1). Each letter gets a node, and the leaf node contains the value (1).
-
-Now insert the pair ("cat", 2). There is no shared prefix, so the new data branches after the root.
-
-Now insert the pair ("doge", 3). This key shares a prefix with the existing key "dog", so the new node is added as a child to the existing leaf.
-
-Now insert the pair ("canape", 4). This shares a prefix with "cat", so the new nodes are added as children to the existing branch.
+1. Create an empty trie. The root of the tree is a null pointer.
+2. Now insert the pair ("dog", 1). Each letter gets a node, and the leaf node contains the value 1.
+3. Now insert the pair ("cat", 2). There is no shared prefix, so the new data branches after the root.
+4. Now insert the pair ("doge", 3). This key shares a prefix with the existing key "dog", so the new node is added as a child to the existing leaf.
+5. Now insert the pair ("canape", 4). This shares a prefix with "cat", so the new nodes are added as children to the existing branch.
 
 ### Implementation
 
@@ -149,11 +149,9 @@ func (n *node) Insert(k, v []byte) KVStore {
 	return insert(n, k, v)
 }
 
-func New() *trie {
+func New() *node {
 	return nil
 }
-
-type trie node
 ```
 
 ### Example Usage
