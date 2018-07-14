@@ -46,6 +46,9 @@ Lets walk through an example, broken into a few steps.
 4. Now insert the pair ("doge", 3). This key shares a prefix with the existing key "dog", so the new node is added as a child to the existing leaf.
 5. Now insert the pair ("canape", 4). This shares a prefix with "cat", so the new nodes are added as children to the existing branch.
 
+![Example trie 1](https://github.com/trustfeed/radix-tree-go/raw/master/images/trie-1.png)
+![Example trie 2](https://github.com/trustfeed/radix-tree-go/raw/master/images/trie-2.png)
+
 ### Implementation
 
 Lets implement this data structure. We will assume the keys are sequences of hexadecimal digits (0-15) and the data is a byte array, as is used in Ethereum.
