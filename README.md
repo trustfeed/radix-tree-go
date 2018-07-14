@@ -254,9 +254,9 @@ func (n *fullNode) copy() *fullNode {
 }
 ```
 
-You can see this data structure doesn't directly map to the high-level example given above. It still benifits from the compression of shared prefixes and reduction of null children. This diagram demonstrates how we would represent the previous example concretly.
+You can see this data structure doesn't directly map to the high-level example given above. It still benifits from the compression of shared prefixes and reduction of null children. This diagram demonstrates how we would represent the previous example concretly. Red dimands represent the fullNode, blue circles represent the shortNode and green circles represent the valueNode.
 
-FIGURE
+![Radix Tree Implementation](https://github.com/trustfeed/radix-tree-go/raw/master/images/radix-tree-implementation.png)
 
 #### Lookup
 
