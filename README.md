@@ -86,8 +86,8 @@ Note that we need to explicit copy the slice, but the array of children gets cop
 Now lets make the lookup function. When performing the lookup function we always have 3 cases;
 
 1. Empty trie so return no data,
-2. There is no remaining key to search so return the data at the current node,
-3. Otherwise descend to the appropriate child and continue searching.
+2. there is no remaining key to search so return the data at the current node,
+3. otherwise descend to the appropriate child and continue searching with a shortened key.
 
 ```go
 func lookup(n *node, k []byte) []byte {
@@ -107,9 +107,9 @@ Pretty simple right?
 
 Now lets make the insert function. When performing the insert function we also have 3 cases;
 
-1. Empty trie so add the next node here,
-2. There is no remaining key so add the value to the current node,
-3. Otherwise descend to the appropriate child and continue.
+1. Empty trie so create an empty node and insert here,
+2. there is no remaining key so add the value to the current node,
+3. otherwise descend to the appropriate child and continue.
 
 ```go
 func insert(n *node, k []byte, v []byte) *node {
@@ -209,17 +209,13 @@ func TestTrie(t *testing.T) {
 
 ## Radix Tree
 
-The simple trie implementation provided above suffers from at least on glaring issue; memory usage. Every node allocates enough memory to point to 16 children regarless of how many children it has. 
+The simple trie implementation provided above suffers from at least one glaring issue; memory usage. Every node allocates enough memory to point to 16 children regarless of how many children it has. 
 
-It is possible to trade some time efficiency for space efficiency by replacing the slice of children with a hash map or list of (prefix, node) pairs. Even so a long key with no shared prefix will require each value in the key to be represented by a unique node.
+It is possible to trade some time efficiency for space efficiency by replacing the slice of children with a hash map or list of (prefix, node) pairs. But even after doing so a long key with no shared prefix will require each value in the key to be represented by a unique node. A common optimisation is to compress the trie by merging nodes that have only one child. Taking the example from above we can easily see the difference.
 
-FIGURE
+![Trie vs Radix Tree](https://github.com/trustfeed/radix-tree-go/raw/master/images/trie-vs-radix-tree.png)
 
-A common optimisation is to compress the trie by merging nodes that have only one child. If we do so the example would look like this.
-
-FIGURE
-
-Now only the branch points need to allocate memory for children, and long sequence of key data can be stored optimally.
+Now only the branch points need to allocate memory for children, and long sequence of key data can be stored optimally. The radix tree will see its highest benifit when there are long prefixes of keys without any branches.
 
 ### Implementation
 
