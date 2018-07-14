@@ -1,22 +1,17 @@
 package pkg
 
-type Tree interface {
-	Lookup(key []byte) []byte
-	Insert(key, value []byte) Tree
-}
-
-func Make() Tree {
-	return &tree{}
+func New() KVStore {
+	return &tree{nil}
 }
 
 type tree struct {
-	root node
+	root interface{}
 }
 
 func (t *tree) Lookup(key []byte) []byte {
 	return lookup(t.root, key)
 }
 
-func (t *tree) Insert(key, value []byte) Tree {
+func (t *tree) Insert(key, value []byte) KVStore {
 	return &tree{insert(t.root, key, value)}
 }
