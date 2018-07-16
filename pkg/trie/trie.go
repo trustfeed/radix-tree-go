@@ -2,11 +2,13 @@ package trie
 
 import radix "github.com/trustfeed/radix-tree-go/pkg"
 
+// A node in a trie.
 type node struct {
 	children [16]*node
 	data     []byte
 }
 
+// A shallow copy of a trie node.
 func (n *node) copy() *node {
 	out := node{
 		children: n.children,

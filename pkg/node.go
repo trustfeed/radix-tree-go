@@ -3,19 +3,23 @@ package pkg
 import "fmt"
 
 type (
+	// The value in the radix-tree
 	valueNode []byte
 
+	// A compressed key
 	shortNode struct {
 		key   []byte
 		child interface{}
 	}
 
+	// Branching node
 	fullNode struct {
 		value    interface{}
 		children [16]interface{}
 	}
 )
 
+// Shallow copy a branch
 func (n *fullNode) copy() *fullNode {
 	return &fullNode{
 		value:    n.value,
@@ -23,6 +27,7 @@ func (n *fullNode) copy() *fullNode {
 	}
 }
 
+// Search for a key
 func lookup(node interface{}, key []byte) []byte {
 	switch n := node.(type) {
 	case nil:
@@ -56,6 +61,7 @@ func lookup(node interface{}, key []byte) []byte {
 	}
 }
 
+// Insert Key-Value pair
 func insert(node interface{}, key, value []byte) interface{} {
 	switch n := node.(type) {
 	case nil:
@@ -83,12 +89,10 @@ func insert(node interface{}, key, value []byte) interface{} {
 	case *shortNode:
 		plen := prefixLen(key, n.key)
 		if plen == len(n.key) {
-			// Keep this node as is and insert to child
 			child := insert(n.child, key[plen:], value)
 			return &shortNode{n.key, child}
 
 		} else {
-			// Introduce a new branch
 			b := fullNode{}
 			if len(n.key) > plen+1 {
 				b.children[n.key[plen]] = &shortNode{n.key[plen+1:], n.child}

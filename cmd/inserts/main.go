@@ -14,6 +14,30 @@ import (
 	trie "github.com/trustfeed/radix-tree-go/pkg/trie"
 )
 
+// A simple benchmarking program
+func main() {
+	var t radix.KVStore
+	if os.Args[1] == "trie" {
+		t = trie.New()
+	} else {
+		t = radix.New()
+	}
+
+	dat := readInput(os.Stdin)
+
+	st := time.Now()
+	for _, d := range dat {
+		t = t.Insert(d.key, d.value)
+	}
+
+	fmt.Println(time.Now().Sub(st).Seconds())
+	dat = nil
+	runtime.GC()
+	PrintMemUsage()
+	fmt.Println(t)
+}
+
+// Read the input
 type input struct {
 	key   []byte
 	value []byte
@@ -52,34 +76,8 @@ func readInput(in io.Reader) []input {
 	return out
 }
 
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
-}
-
 func PrintMemUsage() {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	fmt.Println("%v", m.Alloc)
-}
-
-func main() {
-	var t radix.KVStore
-	if os.Args[1] == "trie" {
-		t = trie.New()
-	} else {
-		t = radix.New()
-	}
-
-	dat := readInput(os.Stdin)
-
-	st := time.Now()
-	for _, d := range dat {
-		t = t.Insert(d.key, d.value)
-	}
-
-	fmt.Println(time.Now().Sub(st).Seconds())
-	dat = nil
-	runtime.GC()
-	PrintMemUsage()
-	fmt.Println(t)
 }

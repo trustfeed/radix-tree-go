@@ -1,5 +1,6 @@
 package pkg
 
+// Make a radix tree
 func New() KVStore {
 	return &tree{nil}
 }

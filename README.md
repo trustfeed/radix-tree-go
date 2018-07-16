@@ -3,7 +3,7 @@
 ## Overview
 This article will present two types of Key-Value data structures; the trie and the radix tree. First we will provide some context on the importance of these data structures along with high level descriptions to introduce the concepts.
 
-In addition we provide implementations in Go that should be very similar to the data structures and algorithms in Ethereum. This should provide all the low level detail required to actually use these concepts in practice.
+In addition we provide implementations in Go that are be very similar to the data structures and algorithms in Ethereum. This should provide all the low level detail required to actually use these concepts in practice.
 
 ## Key-Value Stores
 
@@ -254,7 +254,7 @@ func (n *fullNode) copy() *fullNode {
 }
 ```
 
-You can see this data structure doesn't directly map to the high-level example given above. It still benifits from the compression of shared prefixes and reduction of null children. This diagram demonstrates how we would represent the previous example concretly. Red dimands represent the fullNode, blue circles represent the shortNode and green circles represent the valueNode.
+You can see this data structure doesn't directly map to the high-level example given above. It still benifits from the compression of shared prefixes and reduction of null children. The following diagram demonstrates how we would represent the previous example concretly. Red dimands represent the fullNode, blue circles represent the shortNode and green circles represent the valueNode.
 
 ![Radix Tree Implementation](https://github.com/trustfeed/radix-tree-go/raw/master/images/radix-tree-implementation.png)
 
@@ -394,7 +394,18 @@ func insert(node interface{}, key, value []byte) interface{} {
 }
 ```
 
+The radix tree is put behind the same public interface as the trie. We reuse the same tests too.
+
 ## Benchmarks
+
+In order to have brief test of these two data structures we generated some random data to be stored in the Key-Value Stores. Each key was a random sequence of 8 hexidecimal digits, each value was a random 32 bit integer. Data sets of size 100, 1000, 10000, 100000 and 1000000 pairs were generated (3 instances of each size). Both a trie and radix tree were generated for each data set and the time to generate the data structure and the memory required to hold the data structure were measured. The following was observed;
+
+![Trie vs Radix Tree Time](https://github.com/trustfeed/radix-tree-go/raw/master/images/benchmark-time.png)
+![Trie vs Radix Tree Memory](https://github.com/trustfeed/radix-tree-go/raw/master/images/benchmark-memory.png)
+![Trie vs Radix Tree Time Ratio](https://github.com/trustfeed/radix-tree-go/raw/master/images/benchmark-time-ratio.png)
+![Trie vs Radix Tree Memory Ratio](https://github.com/trustfeed/radix-tree-go/raw/master/images/benchmark-memory-ratio.png)
+
+As expected the Radix trees used less memory than tries. For the data sets of size 100, 1000, 10000 and 100000 the radix tree was also constructed in less time. For data sets of size 1000000 the trie was constructed faster. The radix tree benifits on smaller data because the path from the root to the leaf is shorter, but as the tree fills out the path length increases and the benifit is out weighed by the additional complexity of the insert algorithm.
 
 ## Conclusion
 
